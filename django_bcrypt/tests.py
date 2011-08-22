@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import with_statement
 from contextlib import contextmanager
 
@@ -25,7 +26,8 @@ class CheckPasswordTest(TestCase):
         user = User()
         with settings():
             bcrypt_set_password(user, u"aáåäeéêëoôö")
-        self.assertTrue(bcrypt_check_password(user, u"aaaaeeeeooo"))
+        self.assertTrue(bcrypt_check_password(user, u"aáåäeéêëoôö"))
+        self.assertFalse(bcrypt_check_password(user, u"aaaaeeeeooo"))
         self.assertFalse(bcrypt_check_password(user, 'invalid'))
 
     def test_sha1_password(self):

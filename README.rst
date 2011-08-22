@@ -62,14 +62,20 @@ Default: ``False`` (to speed up user creation)
 Number of rounds to use for bcrypt hashing.  Increase this as computers get faster.
 
 You can change the number of rounds without breaking already-hashed passwords.  New
-passwords will use the new number of rounds, and old ones will use the old number.
+passwords will use the new number of rounds, and old ones will use the old number,
+unless ``BCRYPT_MIGRATE`` is enabled, in which case old ones will be rehashed during
+login to use the new number of rounds.
+
+The number of rounds bcrypt actually uses is 2^N. So when this is ``12``, bcrypt
+uses 4096 rounds.
 
 Default: ``12``
 
 ``BCRYPT_MIGRATE``
 ``````````````````
 
-Enables bcrypt password migration on a ``check_password()`` call.
+Enables bcrypt password migration on a ``check_password()`` call. Use this to 
+migrate an existing deployment (that's using the default auth) over to bcrypt.
 
 The hash is also migrated when ``BCRYPT_ROUNDS`` changes.
 

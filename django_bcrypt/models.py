@@ -79,7 +79,7 @@ def bcrypt_check_password(self, raw_password):
     if pwd_ok and should_change and is_enabled() and migrate_to_bcrypt():
         self.set_password(raw_password)
         salt_and_hash = self.password[3:]
-        assert bcrypt.hashpw(raw_password, salt_and_hash) == salt_and_hash
+        assert bcrypt.hashpw(smart_str(raw_password), salt_and_hash) == salt_and_hash
         self.save()
 
     return pwd_ok

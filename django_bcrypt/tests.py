@@ -7,6 +7,7 @@ import bcrypt
 from django import conf
 from django.contrib.auth.models import User, UNUSABLE_PASSWORD
 from django.test import TestCase
+from django.utils.encoding import smart_str
 from django.utils.functional import LazyObject
 
 from django_bcrypt.models import (bcrypt_check_password, bcrypt_set_password,
@@ -53,7 +54,7 @@ class CheckPasswordTest(TestCase):
 class SetPasswordTest(TestCase):
     def assertBcrypt(self, hashed, password):
         self.assertEqual(hashed[:3], 'bc$')
-        self.assertEqual(hashed[3:], bcrypt.hashpw(password, hashed[3:]))
+        self.assertEqual(hashed[3:], bcrypt.hashpw(smart_str(password), hashed[3:]))
 
     def test_set_password(self):
         user = User()
@@ -84,7 +85,7 @@ class SetPasswordTest(TestCase):
 class MigratePasswordTest(TestCase):
     def assertBcrypt(self, hashed, password):
         self.assertEqual(hashed[:3], 'bc$')
-        self.assertEqual(hashed[3:], bcrypt.hashpw(password, hashed[3:]))
+        self.assertEqual(hashed[3:], bcrypt.hashpw(smart_str(password), hashed[3:]))
 
     def assertSha1(self, hashed, password):
         self.assertEqual(hashed[:5], 'sha1$')
@@ -96,6 +97,17 @@ class MigratePasswordTest(TestCase):
             self.assertSha1(user.password, 'password')
             self.assertTrue(bcrypt_check_password(user, 'password'))
             self.assertBcrypt(user.password, 'password')
+        self.assertEqual(User.objects.get(username='username').password,
+                         user.password)
+    
+    def test_migate_unicode(self):
+        user = User(username='username')
+        pw = u'aáåäeéêëoôö'
+        with settings(BCRYPT_MIGRATE=True, BCRYPT_ENABLED_UNDER_TEST=True):
+            _set_password(user, pw)
+            self.assertSha1(user.password, pw)
+            self.assertTrue(bcrypt_check_password(user, pw))
+            self.assertBcrypt(user.password, pw)
         self.assertEqual(User.objects.get(username='username').password,
                          user.password)
 
